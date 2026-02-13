@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="utf-8">
+  <title>Supabase Chat Security Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    button { margin-right: 10px; }
+    pre { background:#111; color:#0f0; padding:10px; max-height:300px; overflow:auto; }
+  </style>
+</head>
+<body>
+
+<h2>Supabase RLS Test</h2>
+
+<button onclick="createUser()">Create User</button>
+<button onclick="listUsers()">List Users</button>
+
+<pre id="output"></pre>
+
+<script>
+// 🔴 הדבק כאן את שלך (רק מקומית!)
+const SUPABASE_URL = "https://dfgjjtqahggcztmrwqsu.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable__XpfpYPzTvaMKYAEgQkbWA_5fqN";
+  
+const supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
+let currentUser = null;
+
+function log(x) {
+  document.getElementById("output").textContent =
+    typeof x === "string" ? x : JSON.stringify(x, null, 2);
+}
+
+async function createUser() {
+  const { data, error } = await supabase
+    .from("users")
+    .insert({ username: "user_" + Math.floor(Math.random()*10000) })
+    .select()
+    .single();
+
+  if (error) return log(error);
+
+  currentUser = data;
+  log("Logged in as:\n" + JSON.stringify(data, null, 2));
+}
+
+async function listUsers() {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*");
+
+  if (error) return log(error);
+
+  log(data);
+}
+</script>
+
+</body>
+</html>
