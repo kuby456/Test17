@@ -282,7 +282,8 @@ div[style*="display:flex;gap:10px"] {
 
 <div class="field">
   <label>השכלה</label>
-  <select id="education">
+
+  <select id="education" onchange="addEducation()">
     <option value="">בחר</option>
     <option>תיכון</option>
     <option>ישיבה</option>
@@ -293,9 +294,9 @@ div[style*="display:flex;gap:10px"] {
     <option>דוקטורט</option>
     <option>אחר</option>
   </select>
+
+  <div id="selectedEducation" style="margin-top:10px;"></div>
 </div>
-
-
 
 <div class="field">
   <label>סטטוס</label>
@@ -748,6 +749,44 @@ function renderOrigins() {
 function removeOrigin(index){
   origins.splice(index,1);
   renderOrigins();
+}
+
+let educations = [];
+
+function addEducation() {
+  const select = document.getElementById("education");
+  const value = select.value;
+
+  if (value && !educations.includes(value)) {
+    educations.push(value);
+    renderEducation();
+  }
+
+  select.value = "";
+}
+
+function renderEducation() {
+  const box = document.getElementById("selectedEducation");
+
+  box.innerHTML = educations.map((item,index)=>`
+    <span style="
+      display:inline-block;
+      background:#059669;
+      color:#fff;
+      padding:6px 10px;
+      border-radius:20px;
+      margin:4px;
+      font-size:14px;
+      cursor:pointer;
+    " onclick="removeEducation(${index})">
+      ${item} ×
+    </span>
+  `).join("");
+}
+
+function removeEducation(index){
+  educations.splice(index,1);
+  renderEducation();
 }
 </script>
 
