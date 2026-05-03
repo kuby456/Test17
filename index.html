@@ -1,62 +1,753 @@
 <!DOCTYPE html>
-<html lang="he">
+<html lang="he" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <title>Supabase Chat Security Test</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    button { margin-right: 10px; }
-    pre { background:#111; color:#0f0; padding:10px; max-height:300px; overflow:auto; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>השלמת פרטים</title>
+
+<style>
+/* עיצוב כללי */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  
+  margin: 0;
+  padding: 20px;
+  direction: rtl;
+}
+
+h2 {
+  text-align: center;
+  color: #1a1a2e;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.form {
+  max-width: 650px;
+  margin: 0 auto;
+  background: white;
+  padding: 30px 25px;
+  border-radius: 20px;
+  }
+
+/* שדות טופס */
+.field {
+  margin-bottom: 20px;
+}
+
+.field label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 14px;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  transition: 0.2s;
+  background-color: #fff;
+  font-family: inherit;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: #4f46e5;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* הודעת שדה חובה */
+
+.required {
+  display: none;
+  color: #e11d48;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: normal;
+}
+/* כפתור */
+button {
+  background-color: #3730a3;
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 12px;
+}
+
+button:hover {
+  background-color: #4338ca;
+}
+
+/* שדה העלאת תמונות */
+.field label span {
+  display: inline-block;
+  margin-bottom: 8px;
+}
+  .field-tio span{
+    display: column;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 14px;
+    text-align:center;
+    justify-content: center;
+    align-items: center;
+  }
+   .field-tio{
+     display: flex;
+  text-align:center;
+    justify-content: center;
+    align-items: center;
+   }
+input[type="file"] {
+  padding: 8px;
+  background: #f9fafb;
+  border: 1px dashed #aaa;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+#preview {
+  margin-top: 12px;
+}
+
+#preview img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  background: #f8f8f8;
+}
+
+/* ריווח קבוצת כפתורי הקבצים */
+div[style*="display:flex;gap:10px"] {
+  margin-bottom: 8px;
+}
+  
+  .upload-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.upload-btn {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  border-radius: 6px; /* מרובע עדין */
+  background: #4338ca;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+  border: 1px solid #3730a3;
+}
+.upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.icon {
+  width: 50px;
+  height: 50px;
+  fill: white;
+}
+.upload-btn:hover {
+  background: #3730a3;
+}
+
+.upload-btn:active {
+  transform: scale(0.95);
+}
+
+/* תצוגת תמונות */
+.preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preview-img {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border: 1px solid black;
+}
+
+.img-box {
+  position: relative;
+}
+
+.delete-btn {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  background: black;
+  color: white;
+  font-size: 12px;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+  
+</style>
 </head>
+
 <body>
 
-<h2>Supabase RLS Test</h2>
+<h2>מילוי פרטי הפרופיל</h2>
 
-<button onclick="createUser()">Create User</button>
-<button onclick="listUsers()">List Users</button>
+<div class="form">
 
-<pre id="output"></pre>
+  <div class="field">
+    <label>שם פרטי</label>
+    <input id="first_name">
+    <div class="required">שדה חובה</div>
+  </div>
+
+  <div class="field">
+    <label>שם משפחה</label>
+    <input id="last_name">
+    </div>
+
+ <div class="field">
+  <label>גיל</label>
+  <select id="age"></select>
+  <div class="required">שדה חובה</div>
+</div>
+
+  <div class="field">
+  <label>גובה</label>
+  <select id="height"></select>
+</div>
+
+ <div class="field">
+  <label>מוצא</label>
+
+  <select id="origin" onchange="addOrigin()">
+    <option value="">בחר מוצא</option>
+    <option>אשכנזי</option>
+    <option>ספרדי</option>
+    <option>מזרחי</option>
+    <option>תימני</option>
+    <option>מרוקאי</option>
+    <option>עיראקי</option>
+    <option>פרסי</option>
+    <option>כורדי</option>
+    <option>קווקזי</option>
+    <option>אתיופי</option>
+    <option>רוסי</option>
+    <option>אמריקאי</option>
+    <option>צרפתי</option>
+    <option>מעורב</option>
+    <option>אחר</option>
+  </select>
+
+  <div id="selectedOrigins" style="margin-top:10px;"></div>
+
+  <div class="required">שדה חובה</div>
+</div>
+  
+
+
+<div class="field">
+  <label>השכלה</label>
+  <select id="education">
+    <option value="">בחר</option>
+    <option>תיכון</option>
+    <option>ישיבה</option>
+    <option>מכינה</option>
+    <option>הנדסאי</option>
+    <option>תואר ראשון</option>
+    <option>תואר שני</option>
+    <option>דוקטורט</option>
+    <option>אחר</option>
+  </select>
+</div>
+
+
+
+<div class="field">
+  <label>סטטוס</label>
+  <select id="status">
+    <option value="">בחר</option>
+    <option>רווק</option>
+    <option>גרוש</option>
+    <option>אלמן</option>
+  </select>
+</div>
+
+<div class="field">
+  <label>ילדים</label>
+  <select id="has_children" onchange="toggleChildrenCount()">
+    <option value="">בחר</option>
+    <option value="לא">לא</option>
+    <option value="כן">כן</option>
+  </select>
+</div>
+
+<div class="field" id="childrenBox" style="display:none;">
+  <label>מספר ילדים</label>
+  <select id="children_count">
+    <option value="">בחר</option>
+    <option>1</option>
+    <option>2</option>
+    <option>3</option>
+    <option>4</option>
+    <option>5+</option>
+  </select>
+</div>
+
+
+
+ <div class="field">
+    <label>רמה דתית</label>
+    <select id="religion">
+      <option value="">בחר</option>
+      <option>חרדי</option>
+      <option>דתי</option>
+      <option>מסורתי</option>
+      <option>חילוני</option>
+    </select>
+    <div class="required">שדה חובה</div>
+  </div>
+
+  <div class="field">
+  <label>עיסוק</label>
+  <input id="job" type="text" placeholder="לדוגמה: מורה">
+</div>
+
+  <div class="field">
+  <label>איזור מגורים</label>
+  <input id="area" type="text" placeholder="לדוגמה: ירושלים, מרכז">
+</div>
+
+<div class="field">
+  <label>תכונות אופי</label>
+  <textarea id="personality" placeholder="רגוע, שמח, אחראי..."></textarea>
+</div>
+
+<div class="field">
+  <label>תחביבים</label>
+  <textarea id="hobbies" placeholder="ספורט, טיולים, מוזיקה..."></textarea>
+</div>
+
+<div class="field">
+  <label>מה מחפש</label>
+  <textarea id="looking_for" placeholder="ספר בקצרה מה חשוב לך"></textarea>
+</div>
+
+ <div class="field">
+  <label>שירות צבאי</label>
+  <textarea id="army_service" placeholder="כתוב חופשי..."></textarea>
+</div>
+
+  <div class="field">
+    <label>קצת עליי (לא חובה)</label>
+    <textarea id="about"></textarea>
+  </div>
+
+  <div class="field">
+    <label>מספר טלפון</label>
+    <input id="phone" type="tel">
+    <div class="required">שדה חובה</div>
+  </div>
+  
+<div class="field-tio">
+
+  <label style="display:flex;justify-content:space-between;align-items:center;">
+   <span style="font-weight:bold;">
+  העלאת תמונות לכרטיס <br>
+  <span style="
+    background:#eee;
+    color:#555;
+    font-size:11px;
+    padding:2px 6px;
+    border-radius:4px;
+    margin-right:6px;
+  ">
+    (לא חובה אופציונלי)
+  </span>
+</span>
+  </label>
+
+ 
+  </div>
+  
+ <div class="upload-buttons">
+
+  <!-- העלאת תמונה -->
+  <label class="upload-btn">
+    <input type="file" id="imageInput" accept="image/*" multiple hidden>
+
+    <span class="icon-wrap">
+      <!-- אייקון תמונה -->
+      <svg viewBox="0 0 24 24" class="icon">
+        <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2ZM8.5 11.5l2.5 3 3.5-4.5L20 17H4l4.5-5.5Z"/>
+      </svg>
+    </span>
+
+    העלאה תמונה
+  </label>
+
+  <!-- מצלמה -->
+  <label class="upload-btn">
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
+
+    <span class="icon-wrap">
+      <!-- אייקון מצלמה -->
+      <svg viewBox="0 0 24 24" class="icon">
+        <path d="M9 3 7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.17L15 3H9Zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/>
+      </svg>
+    </span>
+
+    צלם תמונה
+  </label>
+
+</div>
+
+<div id="preview" class="preview"></div>
+
+  <button onclick="saveProfile()">שמור והמשך</button>
+</div>
+
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-// 🔴 הדבק כאן את שלך (רק מקומית!)
-const SUPABASE_URL = "https://dfgjjtqahggcztmrwqsu.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable__XpfpYPzTvaMKYAEgQkbWA_5fqN";
-  
-const supabase = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
+const supabaseClient = supabase.createClient(
+  "https://gpdkkjvppcsyqcdfbfyd.supabase.co",
+  "sb_publishable_f5nIFbWwsTLCroOegC8vmw_WTxoEeeA"
 );
 
-let currentUser = null;
+  const DEV_MODE = true;
+// ---------------- INIT ----------------
+init();
 
-function log(x) {
-  document.getElementById("output").textContent =
-    typeof x === "string" ? x : JSON.stringify(x, null, 2);
+  
+async function init() {
+  await supabaseClient.auth.getSession();
+
+  const { data } = await supabaseClient.auth.getUser();
+  const user = data?.user;
+
+  console.log("user:", user);
+
+  // 👇 רק בפרודקשן
+  if (!user && !DEV_MODE) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  setupSelects();
+  setupValidation();
 }
 
-async function createUser() {
-  const { data, error } = await supabase
-    .from("users")
-    .insert({ username: "user_" + Math.floor(Math.random()*10000) })
-    .select()
-    .single();
+// ---------------- CHECK PROFILE ----------------
+async function checkProfile(user) {
+  const { data } = await supabaseClient
+    .from("profiles")
+    .select("id")
+    .eq("id", user.id)
+    .maybeSingle();
 
-  if (error) return log(error);
-
-  currentUser = data;
-  log("Logged in as:\n" + JSON.stringify(data, null, 2));
+  if (data) {
+    window.location.href = "index.html";
+  }
 }
 
-async function listUsers() {
-  const { data, error } = await supabase
-    .from("users")
-    .select("*");
+// ---------------- VALIDATION ----------------
+function setupValidation() {
+  const requiredFields = [
+    "first_name",
+    "last_name",
+    "age",
+    "religion",
+    "phone"
+  ];
 
-  if (error) return log(error);
+  requiredFields.forEach(id => {
+    const input = document.getElementById(id);
 
-  log(data);
+    input.addEventListener("input", () => {
+      const error = input.parentElement.querySelector(".required");
+
+      if (!input.value.trim()) {
+        if (error) error.style.display = "block";
+        input.style.borderColor = "red";
+      } else {
+        if (error) error.style.display = "none";
+        input.style.borderColor = "#ccc";
+      }
+    });
+  });
+}
+
+function validate() {
+  let valid = true;
+
+  const requiredFields = [
+    "first_name",
+    "last_name",
+    "age",
+    "origin",
+    "religion",
+    "phone"
+  ];
+
+  requiredFields.forEach(id => {
+    const input = document.getElementById(id);
+    const error = input.parentElement.querySelector(".required");
+
+    if (!input.value.trim()) { // 🔥 אם ריק
+      if (error) error.style.display = "block";
+      input.style.borderColor = "red";
+      valid = false;
+    } else {
+      if (error) error.style.display = "none";
+      input.style.borderColor = "#ccc";
+    }
+  });
+
+
+  if (origins.length === 0) {
+    document.querySelector("#origin").style.borderColor = "red";
+    valid = false;
+  } else {
+    document.querySelector("#origin").style.borderColor = "#ccc";
+  }
+
+  return valid;
+}
+
+// ---------------- IMAGES ----------------
+let images = [];
+
+document.getElementById("imageInput").addEventListener("change", handleFiles);
+document.getElementById("cameraInput").addEventListener("change", handleFiles);
+
+async function handleFiles(e) {
+  const files = Array.from(e.target.files);
+
+  for (let file of files) {
+    const compressed = await compressImage(file);
+    images.push(compressed);
+    renderImages();
+  }
+}
+
+function renderImages() {
+  const preview = document.getElementById("preview");
+  preview.innerHTML = "";
+
+  images.forEach((img, index) => {
+    const box = document.createElement("div");
+    box.className = "img-box";
+
+    const image = document.createElement("img");
+    image.src = URL.createObjectURL(img);
+    image.className = "preview-img";
+
+    const del = document.createElement("div");
+    del.className = "delete-btn";
+    del.innerText = "×";
+    del.onclick = () => {
+      images.splice(index, 1);
+      renderImages();
+    };
+
+    box.appendChild(image);
+    box.appendChild(del);
+    preview.appendChild(box);
+  });
+}
+
+// ---------------- COMPRESS ----------------
+function compressImage(file) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = (e) => img.src = e.target.result;
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+
+      const MAX_WIDTH = 800;
+      const scale = MAX_WIDTH / img.width;
+
+      canvas.width = MAX_WIDTH;
+      canvas.height = img.height * scale;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob((blob) => {
+        resolve(new File([blob], file.name, {
+          type: "image/jpeg"
+        }));
+      }, "image/jpeg", 0.7);
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+function setupSelects() {
+  const ageSelect = document.getElementById("age");
+  const heightSelect = document.getElementById("height");
+
+  if (!ageSelect || !heightSelect) return;
+
+  // גיל
+  ageSelect.innerHTML = '<option value="">בחר גיל</option>';
+  for (let i = 18; i <= 80; i++) {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = i;
+    ageSelect.appendChild(option);
+  }
+
+  // גובה
+  heightSelect.innerHTML = '<option value="">בחר גובה</option>';
+  for (let i = 140; i <= 210; i++) {
+    const option = document.createElement("option");
+    option.value = i;
+    option.textContent = i + " ס״מ";
+    heightSelect.appendChild(option);
+  }
+}
+  
+// ---------------- SAVE ----------------
+async function saveProfile() {
+
+  if (!validate()) return;
+
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
+  const first_name = document.getElementById("first_name").value.trim();
+  const last_name = document.getElementById("last_name").value.trim();
+  const age = document.getElementById("age").value;
+  const phone = document.getElementById("phone").value.trim();
+
+  const height = document.getElementById("height").value;
+const origin = JSON.stringify(origins);
+ const religion = document.getElementById("religion").value;
+  const about = document.getElementById("about").value;
+
+  let imageUrls = [];
+
+  // העלאת תמונות
+  for (let img of images) {
+    const fileName = `${user.id}/${Date.now()}-${img.name}`;
+
+    const { error } = await supabaseClient.storage
+      .from("avatars")
+      .upload(fileName, img);
+
+    if (!error) {
+      const { data } = supabaseClient.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
+
+      imageUrls.push(data.publicUrl);
+    }
+  }
+
+  // שמירה DB
+  const { error } = await supabaseClient
+    .from("profiles")
+    .upsert({
+      id: user.id,
+      first_name,
+      last_name,
+      age,
+      height,
+      origin,
+      religion,
+      about,
+      phone,
+      images: imageUrls
+    });
+
+  if (!error) {
+    window.location.href = "index.html";
+  } else {
+    console.log(error);
+    alert("שגיאה בשמירה");
+  }
+}
+
+function toggleChildrenCount(){
+  const val = document.getElementById("has_children").value;
+  document.getElementById("childrenBox").style.display =
+    val === "כן" ? "block" : "none";
+}
+
+let origins = [];
+
+function addOrigin() {
+  const select = document.getElementById("origin");
+  const value = select.value;
+
+  if (value && !origins.includes(value)) {
+    origins.push(value);
+    renderOrigins();
+  }
+
+  select.value = "";
+}
+
+function renderOrigins() {
+  const box = document.getElementById("selectedOrigins");
+
+  box.innerHTML = origins.map((item,index)=>`
+    <span style="
+      display:inline-block;
+      background:#4338ca;
+      color:#fff;
+      padding:6px 10px;
+      border-radius:20px;
+      margin:4px;
+      font-size:14px;
+      cursor:pointer;
+    " onclick="removeOrigin(${index})">
+      ${item} ×
+    </span>
+  `).join("");
+}
+
+function removeOrigin(index){
+  origins.splice(index,1);
+  renderOrigins();
 }
 </script>
 
