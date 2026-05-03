@@ -302,6 +302,7 @@ justify-content: center;
 margin-bottom: 15px;
 font-size: 13px;
 }
+
 #genderStep{
   transition:.45s ease;
 }
@@ -311,7 +312,7 @@ font-size: 13px;
 }
 
 #confirmGenderBtn:disabled{
-  opacity:.45;
+  opacity:0.45;
   cursor:not-allowed;
 }
 .switch-indicator{
@@ -320,13 +321,56 @@ opacity:0;
 .switch-box.selected .switch-indicator{
 opacity:1;
 }
+
+.info-notice{
+  background:rgba(59,130,246,0.08);
+  border:1px solid rgba(59,130,246,0.25);
+  border-right:4px solid #60a5fa;
+  color:#1e3a8a;
+  padding:5px 10px;
+  border-radius:14px;
+  margin:15px 0 25px;
+  font-size:13px;
+  line-height:1.6;
+  box-shadow:0 8px 22px rgba(37,99,235,0.08);
+  animation:hideNotice 0.4s ease forwards;
+  animation-delay:10s;
+  max-width: 80%;
+  margin: 0 auto;
+}
+
+.info-notice strong{
+  display:block;
+  margin-bottom:4px;
+  font-size:15px;
+}
+
+.info-notice p{
+  margin:0;
+  margin: 0 auto;
+
+}
+
+@keyframes hideNotice{
+  to{
+    opacity:0;
+    transform:translateY(-8px);
+  }
+}
 </style>
 </head>
 
 <body>
 
 <h2>מילוי פרטי הפרופיל</h2>
-
+<div id="infoNotice" class="info-notice" style="display:none;">
+  <strong>הערה</strong>
+  <p>
+    לידיעתכם
+    בהמשך יהיה ניתן לבחור אילו פרטים אישיים יוצגו באתר,
+    וכמו כן תוכלו לבחור אילו מהפרטים להציג למשתמשים ספציפיים.
+  </p>
+</div>
 <div class="form">
 
   <!-- מסך פתיחה -->
@@ -338,7 +382,8 @@ opacity:1;
       border-radius:10px;
       width:100%;
       margin:0 auto 30px;
-      box-shadow:0 3px 10px rgba(13,37,136,.09);
+      background: rgba(11, 11, 145, 0.049);
+      box-shadow:0 3px 10px rgba(37, 78, 141, 0.177);
     ">
 
       <span class="gender1">נא להזין בחירה</span>
@@ -370,6 +415,7 @@ opacity:1;
   <div class="field">
     <label>שם משפחה</label>
     <input id="last_name">
+    <div class="required">שדה חובה</div>
     </div>
 
  <div class="field">
@@ -581,7 +627,7 @@ opacity:1;
 
 <div id="preview" class="preview"></div>
 
-  <button onclick="saveProfile()">שמור והמשך</button>
+  <button type="button" onclick="saveProfile()">שמור והמשך</button>
 </div>
     
   </div>
@@ -817,22 +863,37 @@ async function saveProfile() {
 
   if (!validate()) return;
 
-  const { data: { user } } = await supabaseClient.auth.getUser();
+  const { data:{ user } } = await supabaseClient.auth.getUser();
 
   const first_name = document.getElementById("first_name").value.trim();
   const last_name = document.getElementById("last_name").value.trim();
+
   const age = document.getElementById("age").value;
+  const height = document.getElementById("height").value;
+
+  const status = document.getElementById("status").value;
+  const religion = document.getElementById("religion").value;
+
+  const has_children = document.getElementById("has_children").value;
+  const children_count = document.getElementById("children_count").value;
+
   const phone = document.getElementById("phone").value.trim();
 
-  const height = document.getElementById("height").value;
-const origin = JSON.stringify(origins);
- const religion = document.getElementById("religion").value;
-  const about = document.getElementById("about").value;
+  const job = document.getElementById("job").value.trim();
+  const area = document.getElementById("area").value.trim();
+
+  const personality = document.getElementById("personality").value.trim();
+  const hobbies = document.getElementById("hobbies").value.trim();
+  const looking_for = document.getElementById("looking_for").value.trim();
+  const army_service = document.getElementById("army_service").value.trim();
+
+  const origin = JSON.stringify(origins);
+  const education = JSON.stringify(educations);
 
   let imageUrls = [];
 
-  // העלאת תמונות
   for (let img of images) {
+
     const fileName = `${user.id}/${Date.now()}-${img.name}`;
 
     const { error } = await supabaseClient.storage
@@ -840,6 +901,7 @@ const origin = JSON.stringify(origins);
       .upload(fileName, img);
 
     if (!error) {
+
       const { data } = supabaseClient.storage
         .from("avatars")
         .getPublicUrl(fileName);
@@ -848,18 +910,36 @@ const origin = JSON.stringify(origins);
     }
   }
 
-  // שמירה DB
   const { error } = await supabaseClient
     .from("profiles")
     .upsert({
       id: user.id,
+
+      gender,
+
       first_name,
       last_name,
+
       age,
       height,
-      origin,
+
+      status,
       religion,
-      about,
+
+      origin,
+      education,
+
+      has_children,
+      children_count,
+
+      job,
+      area,
+
+      personality,
+      hobbies,
+      looking_for,
+      army_service,
+
       phone,
       images: imageUrls
     });
@@ -978,10 +1058,27 @@ box.classList.add("selected");
 
   document.getElementById("confirmGenderBtn").disabled = false;
 
+ 
   updateGenderFields();
+  showInfoNotice();
+}
+
+function closeInfoNotice(){
+
+  const notice = document.getElementById("infoNotice");
+
+  clearTimeout(notice.timer);
+
+  notice.style.opacity = "0";
+
+  setTimeout(()=>{
+    notice.style.display = "none";
+  },450);
 }
 
 function confirmGender(){
+
+  closeInfoNotice(); /* סוגר מיד בלחיצה על אישור */
 
   if(!genderChosen) return;
 
@@ -994,7 +1091,6 @@ function confirmGender(){
   setTimeout(()=>{
 
     step.style.display = "none";
-
     main.style.display = "block";
 
     setTimeout(()=>{
@@ -1003,6 +1099,33 @@ function confirmGender(){
     },30);
 
   },450);
+}
+
+
+
+function showInfoNotice(){
+
+  const notice = document.getElementById("infoNotice");
+
+  notice.style.display = "block";
+  notice.style.opacity = "0";
+  notice.style.transition = "opacity 0.80s ease";
+
+  setTimeout(()=>{
+    notice.style.opacity = "1";
+  },10);
+
+  clearTimeout(notice.timer);
+
+  notice.timer = setTimeout(()=>{
+
+    notice.style.opacity = "0";
+
+    setTimeout(()=>{
+      notice.style.display = "none";
+    },450);
+
+  },10000);
 }
 
 function showLockBanner(){
@@ -1027,7 +1150,7 @@ function showLockBanner(){
     document.body.appendChild(banner);
   }
 
-  banner.textContent = "אם ברצונכם לשנות נא ללחוץ פעמיים האתר אלול לרענן נתונים";
+  banner.textContent = "אם ברצונכם לשנות נא ללחוץ פעמיים האתר עלול לרענן נתונים";
   banner.style.display = "block";
   banner.style.opacity = "1";
 
@@ -1043,8 +1166,16 @@ function updateGenderFields(){
 
   const status = document.getElementById("status");
   const religion = document.getElementById("religion");
-  const army = document.querySelector('label[for="army_service"]') || 
-               document.querySelector('#army_service').parentElement.querySelector("label");
+  const origin = document.getElementById("origin");
+
+  const armyLabel = document.querySelector('#army_service').parentElement.querySelector("label");
+  const armyInput = document.getElementById("army_service");
+
+  const job = document.getElementById("job");
+  const area = document.getElementById("area");
+  const personality = document.getElementById("personality");
+  const hobbies = document.getElementById("hobbies");
+  const looking = document.getElementById("looking_for");
 
   if(gender === "male"){
 
@@ -1069,19 +1200,51 @@ function updateGenderFields(){
       <option>חילוני</option>
     `;
 
-    army.textContent = "שירות צבאי";
+    origin.innerHTML = `
+      <option value="">בחר מוצא</option>
+      <option>אשכנזי</option>
+      <option>ספרדי</option>
+      <option>מזרחי</option>
+      <option>תימני</option>
+      <option>מרוקאי</option>
+      <option>עיראקי</option>
+      <option>פרסי</option>
+      <option>כורדי</option>
+      <option>קווקזי</option>
+      <option>אתיופי</option>
+      <option>רוסי</option>
+      <option>אמריקאי</option>
+      <option>צרפתי</option>
+      <option>מעורב</option>
+      <option>אחר</option>
+    `;
+
+    document.getElementById("age").options[0].text = "בחר גיל";
+    document.getElementById("height").options[0].text = "בחר גובה";
+    document.getElementById("education").options[0].text = "בחר";
+    document.getElementById("has_children").options[0].text = "בחר";
+    document.getElementById("children_count").options[0].text = "בחר";
+
+    job.placeholder = "לדוגמה: מורה";
+    area.placeholder = "לדוגמה: ירושלים, מרכז";
+    personality.placeholder = "רגוע, שמח, אחראי...";
+    hobbies.placeholder = "ספורט, טיולים, מוזיקה...";
+    looking.placeholder = "ספר בקצרה מה חשוב לך";
+
+    armyLabel.textContent = "שירות צבאי";
+    armyInput.placeholder = "כתוב חופשי...";
 
   }else{
 
     status.innerHTML = `
-      <option value="">בחר</option>
+      <option value="">בחרי</option>
       <option>רווקה</option>
       <option>גרושה</option>
       <option>אלמנה</option>
     `;
 
     religion.innerHTML = `
-      <option value="">בחר</option>
+      <option value="">בחרי</option>
       <option>חרדית</option>
       <option>חרדית מודרנית</option>
       <option>דתיה לאומית</option>
@@ -1095,11 +1258,41 @@ function updateGenderFields(){
       <option>חילונית</option>
     `;
 
-    army.textContent = "שירות לאומי / צבאי";
+    origin.innerHTML = `
+      <option value="">בחרי מוצא</option>
+      <option>אשכנזייה</option>
+      <option>ספרדייה</option>
+      <option>מזרחית</option>
+      <option>תימנייה</option>
+      <option>מרוקאית</option>
+      <option>עיראקית</option>
+      <option>פרסייה</option>
+      <option>כורדית</option>
+      <option>קווקזית</option>
+      <option>אתיופית</option>
+      <option>רוסייה</option>
+      <option>אמריקאית</option>
+      <option>צרפתייה</option>
+      <option>מעורבת</option>
+      <option>אחרת</option>
+    `;
+
+    document.getElementById("age").options[0].text = "בחרי גיל";
+    document.getElementById("height").options[0].text = "בחרי גובה";
+    document.getElementById("education").options[0].text = "בחרי";
+    document.getElementById("has_children").options[0].text = "בחרי";
+    document.getElementById("children_count").options[0].text = "בחרי";
+
+    job.placeholder = "לדוגמה: מורה";
+    area.placeholder = "לדוגמה: ירושלים, מרכז";
+    personality.placeholder = "רגועה, שמחה, אחראית...";
+    hobbies.placeholder = "ספורט, טיולים, מוזיקה...";
+    looking.placeholder = "ספרי בקצרה מה חשוב לך";
+
+    armyLabel.textContent = "שירות לאומי / צבאי";
+    armyInput.placeholder = "כתבי חופשי...";
   }
 }
-
-updateGenderFields();
 </script>
 
 </body>
