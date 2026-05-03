@@ -225,11 +225,11 @@ div[style*="display:flex;gap:10px"] {
   grid-template-columns:1fr 1fr;
   margin: 0 auto;
 margin-bottom: 30px;
-  width:260px;
-  height:52px;
+  width:120px;
+  height:32px;
   padding:4px;
-
   border-radius:18px;
+justify-content: center;
 
   background:rgba(255,255,255,0.22);
   backdrop-filter:blur(16px);
@@ -297,6 +297,13 @@ margin-bottom: 30px;
   transform:translateX(-100%);
 }
 
+.gender1 {
+display: flex;
+justify-content: center;
+margin-bottom: 15px;
+font-size: 13px;
+}
+
 </style>
 </head>
 
@@ -305,13 +312,17 @@ margin-bottom: 30px;
 <h2>מילוי פרטי הפרופיל</h2>
 
 <div class="form">
-
+  <div style="height: 90px;  padding: 10px; border-radius: 10px;  width: 100%; margin: 0 auto; margin-bottom: 30px;  box-shadow:  0 3px 10px rgba(18, 49, 171, 0.128)">
+  <span class="gender1">נא לאזין בחירה</span>
   <div class="switch-box">
   <button type="button" class="switch-btn active" onclick="moveSwitch(0)">אישה</button>
   <button type="button" class="switch-btn" onclick="moveSwitch(1)">גבר</button>
   <span class="switch-indicator"></span>
 </div>
-
+</div>
+<hr>
+<br>
+<br>
 
   <div class="field">
     <label>שם פרטי</label>
@@ -927,7 +938,7 @@ function moveSwitch(index){
 
     showLockBanner();
 
-    if(pendingClicks < 3) return;
+    if(pendingClicks < 2) return;
 
     pendingClicks = 0;
     pendingIndex = null;
@@ -965,21 +976,20 @@ function showLockBanner(){
     banner.id = "lockBanner";
 
     banner.style.position = "fixed";
-    banner.style.top = "20px";
+    banner.style.top = "40px";
     banner.style.left = "50%";
     banner.style.transform = "translateX(-50%)";
-    banner.style.background = "#dc2626";
-    banner.style.color = "#fff";
-    banner.style.padding = "12px 18px";
+    banner.style.background = "red";
+    banner.style.color = "white";
     banner.style.borderRadius = "12px";
     banner.style.zIndex = "9999";
-    banner.style.fontSize = "14px";
-    banner.style.boxShadow = "0 10px 25px rgba(0,0,0,.18)";
+    banner.style.padding = "13px 13px";
+    banner.style.fontSize = "10px";
 
     document.body.appendChild(banner);
   }
 
-  banner.textContent = "לאחר הבחירה אם הבחירה שגויה נא ללחוץ 3 פעמים";
+  banner.textContent = "אם ברצונכם לשנות נא ללחוץ פעמיים האתר אלול לרענן נתונים";
   banner.style.display = "block";
   banner.style.opacity = "1";
 
@@ -988,7 +998,7 @@ function showLockBanner(){
   banner.timer = setTimeout(() => {
     banner.style.opacity = "0";
     setTimeout(()=> banner.style.display = "none",300);
-  }, 3000);
+  }, 5000);
 }
 
 function updateGenderFields(){
