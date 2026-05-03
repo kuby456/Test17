@@ -260,7 +260,6 @@ justify-content: center;
   border-radius:14px;
   font-size:15px;
   font-weight:500;
-  cursor:pointer;
   color:#111;
 }
 
@@ -303,7 +302,24 @@ justify-content: center;
 margin-bottom: 15px;
 font-size: 13px;
 }
+#genderStep{
+  transition:.45s ease;
+}
 
+#mainContent{
+  transition:.55s ease;
+}
+
+#confirmGenderBtn:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+.switch-indicator{
+opacity:0;
+}
+.switch-box.selected .switch-indicator{
+opacity:1;
+}
 </style>
 </head>
 
@@ -312,19 +328,40 @@ font-size: 13px;
 <h2>מילוי פרטי הפרופיל</h2>
 
 <div class="form">
-  <div style="height: 90px;  padding: 10px; border-radius: 10px;  width: 100%; margin: 0 auto; margin-bottom: 30px;  box-shadow:  0 3px 10px rgba(13, 37, 136, 0.092)">
-  <span class="gender1">נא לאזין בחירה</span>
-  <div class="switch-box">
-  <button type="button" class="switch-btn active" onclick="moveSwitch(0)">אישה</button>
-  <button type="button" class="switch-btn" onclick="moveSwitch(1)">גבר</button>
-  <span class="switch-indicator"></span>
-</div>
-</div>
-<hr>
-<br>
-<br>
 
-  <div class="field">
+  <!-- מסך פתיחה -->
+  <div id="genderStep">
+
+    <div style="
+      height:90px;
+      padding:10px;
+      border-radius:10px;
+      width:100%;
+      margin:0 auto 30px;
+      box-shadow:0 3px 10px rgba(13,37,136,.09);
+    ">
+
+      <span class="gender1">נא להזין בחירה</span>
+
+      <div class="switch-box">
+        <button type="button" class="switch-btn" onclick="moveSwitch(0)">אישה</button>
+        <button type="button" class="switch-btn" onclick="moveSwitch(1)">גבר</button>
+        <span class="switch-indicator"></span>
+      </div>
+
+    </div>
+
+    <button type="button" id="confirmGenderBtn" onclick="confirmGender()" disabled>
+      אישור
+    </button>
+
+  </div>
+
+
+  <!-- כל שאר הטופס -->
+  <div id="mainContent" style="display:none; opacity:0; transform:translateX(80px);">
+
+<div class="field">
     <label>שם פרטי</label>
     <input id="first_name">
     <div class="required">שדה חובה</div>
@@ -546,7 +583,13 @@ font-size: 13px;
 
   <button onclick="saveProfile()">שמור והמשך</button>
 </div>
+    
+  </div>
 
+</div>
+
+
+  
  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -559,7 +602,6 @@ const supabaseClient = supabase.createClient(
 // ---------------- INIT ----------------
 init();
 
-let gender = "female"; // ברירת מחדל
 
 
 async function init() {
@@ -917,28 +959,10 @@ let lockTimer = null;
 let currentIndex = 0;
 let pendingIndex = null;
 let pendingClicks = 0;
+let gender = "";
+let genderChosen = false;
 
 function moveSwitch(index){
-
-  /* אם נעול */
-  if (switchLocked) {
-
-    if(index === currentIndex) return;
-
-    if(pendingIndex === index){
-      pendingClicks++;
-    }else{
-      pendingIndex = index;
-      pendingClicks = 1;
-    }
-
-    showLockBanner();
-
-    if(pendingClicks < 2) return;
-
-    pendingClicks = 0;
-    pendingIndex = null;
-  }
 
   const box = document.querySelector(".switch-box");
   const buttons = document.querySelectorAll(".switch-btn");
@@ -947,20 +971,38 @@ function moveSwitch(index){
   buttons[index].classList.add("active");
 
   box.classList.toggle("left", index === 1);
+box.classList.add("selected");
 
-  currentIndex = index;
   gender = index === 0 ? "female" : "male";
+  genderChosen = true;
+
+  document.getElementById("confirmGenderBtn").disabled = false;
 
   updateGenderFields();
+}
 
-  switchLocked = true;
+function confirmGender(){
 
-  clearTimeout(lockTimer);
-  lockTimer = setTimeout(() => {
-    switchLocked = false;
-    pendingClicks = 0;
-    pendingIndex = null;
-  }, 50000);
+  if(!genderChosen) return;
+
+  const step = document.getElementById("genderStep");
+  const main = document.getElementById("mainContent");
+
+  step.style.transform = "translateX(-100px)";
+  step.style.opacity = "0";
+
+  setTimeout(()=>{
+
+    step.style.display = "none";
+
+    main.style.display = "block";
+
+    setTimeout(()=>{
+      main.style.opacity = "1";
+      main.style.transform = "translateX(0)";
+    },30);
+
+  },450);
 }
 
 function showLockBanner(){
